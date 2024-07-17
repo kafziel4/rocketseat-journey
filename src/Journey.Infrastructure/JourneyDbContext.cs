@@ -8,8 +8,8 @@ public class JourneyDbContext : DbContext
     public DbSet<Trip> Trips { get; set; }
     public DbSet<Activity> Activities { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public JourneyDbContext(DbContextOptions<JourneyDbContext> options)
+        : base(options)
     {
-        optionsBuilder.UseSqlite("Data Source=.\\JourneyDatabase.db");
     }
 }

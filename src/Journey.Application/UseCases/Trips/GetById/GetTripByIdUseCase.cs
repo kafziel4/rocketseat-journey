@@ -1,4 +1,5 @@
-﻿using Journey.Communication.Responses;
+﻿using Journey.Application.Mappers;
+using Journey.Communication.Responses;
 using Journey.Exception;
 using Journey.Exception.ExceptionsBase;
 using Journey.Infrastructure;
@@ -8,33 +9,27 @@ namespace Journey.Application.UseCases.Trips.GetById;
 
 public class GetTripByIdUseCase
 {
-    public ResponseTripJson Execute(Guid id)
-    {
-        var dbContext = new JourneyDbContext();
+    private readonly JourneyDbContext _dbContext;
 
-        var trip = dbContext
+    public GetTripByIdUseCase(JourneyDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task<ResponseTripJson> ExecuteAsync(Guid id)
+    {
+        var trip = await _dbContext
             .Trips
-            .Include(trip => trip.Activities)
-            .FirstOrDefault(trip => trip.Id == id);
+            .Include(t => t.Activities)
+            .Where(t => t.Id == id)
+            .Select(t => t.ToTripJson())
+            .FirstOrDefaultAsync();
 
         if (trip is null)
         {
             throw new NotFoundException(ResourceErrorMessages.TRIP_NOT_FOUND);
         }
 
-        return new ResponseTripJson
-        {
-            Id = trip.Id,
-            Name = trip.Name,
-            StartDate = trip.StartDate,
-            EndDate = trip.EndDate,
-            Activities = trip.Activities.Select(activity => new ResponseActivityJson
-            {
-                Id = activity.Id,
-                Name = activity.Name,
-                Date = activity.Date,
-                Status = (Communication.Enums.ActivityStatus)activity.Status
-            }).ToList()
-        };
+        return trip;
     }
 }

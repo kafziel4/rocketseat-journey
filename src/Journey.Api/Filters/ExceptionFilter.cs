@@ -14,7 +14,10 @@ public class ExceptionFilter : IExceptionFilter
         {
             context.HttpContext.Response.StatusCode = (int)journeyException.GetStatusCode();
 
-            var responseJson = new ResponseErrorsJson(journeyException.GetErrorMessages());
+            var responseJson = new ResponseErrorsJson
+            {
+                Errors = journeyException.GetErrorMessages()
+            };
 
             context.Result = new ObjectResult(responseJson);
         }
@@ -22,7 +25,10 @@ public class ExceptionFilter : IExceptionFilter
         {
             context.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-            var responseJson = new ResponseErrorsJson([ResourceErrorMessages.UNKNOWN_ERROR]);
+            var responseJson = new ResponseErrorsJson
+            {
+                Errors = [ResourceErrorMessages.UNKNOWN_ERROR]
+            };
 
             context.Result = new ObjectResult(responseJson);
         }

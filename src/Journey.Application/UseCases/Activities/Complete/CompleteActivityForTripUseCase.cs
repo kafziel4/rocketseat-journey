@@ -2,18 +2,24 @@
 using Journey.Exception.ExceptionsBase;
 using Journey.Infrastructure;
 using Journey.Infrastructure.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Journey.Application.UseCases.Activities.Complete;
 
 public class CompleteActivityForTripUseCase
 {
-    public void Execute(Guid tripId, Guid activityId)
-    {
-        var dbContext = new JourneyDbContext();
+    private readonly JourneyDbContext _dbContext;
 
-        var activity = dbContext
+    public CompleteActivityForTripUseCase(JourneyDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task ExecuteAsync(Guid tripId, Guid activityId)
+    {
+        var activity = await _dbContext
             .Activities
-            .FirstOrDefault(activity => activity.Id == activityId && activity.TripId == tripId);
+            .FirstOrDefaultAsync(a => a.Id == activityId && a.TripId == tripId);
 
         if (activity is null)
         {
@@ -22,6 +28,6 @@ public class CompleteActivityForTripUseCase
 
         activity.Status = ActivityStatus.Done;
 
-        dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 }

@@ -1,4 +1,7 @@
 using Journey.Api.Filters;
+using Journey.Application;
+using Journey.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +10,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddMvc(config => config.Filters.Add(typeof(ExceptionFilter)));
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddDbContext<JourneyDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("JourneyDatabase")));
+
+builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
+
+builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
@@ -24,3 +34,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;

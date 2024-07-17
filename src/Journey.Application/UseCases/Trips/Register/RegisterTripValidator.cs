@@ -6,14 +6,14 @@ namespace Journey.Application.UseCases.Trips.Register;
 
 public class RegisterTripValidator : AbstractValidator<RequestRegisterTripJson>
 {
-    public RegisterTripValidator()
+    public RegisterTripValidator(TimeProvider timeProvider)
     {
         RuleFor(request => request.Name)
             .NotEmpty()
             .WithMessage(ResourceErrorMessages.NAME_EMPTY);
 
         RuleFor(request => request.StartDate.Date)
-            .GreaterThanOrEqualTo(DateTime.UtcNow.Date)
+            .GreaterThanOrEqualTo(timeProvider.GetUtcNow().DateTime.Date)
             .WithMessage(ResourceErrorMessages.DATE_TRIP_MUST_BE_LATER_THAN_TODAY);
 
         RuleFor(request => request)

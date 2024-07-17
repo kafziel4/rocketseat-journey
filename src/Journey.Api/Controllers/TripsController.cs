@@ -18,35 +18,33 @@ public class TripsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ResponseShortTripJson), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status400BadRequest)]
-    public IActionResult Register([FromBody] RequestRegisterTripJson request)
+    public async Task<IActionResult> Register(
+        [FromBody] RequestRegisterTripJson request,
+        [FromServices] RegisterTripUseCase registerTripUseCase)
     {
-        var useCase = new RegisterTripUseCase();
-
-        var response = useCase.Execute(request);
+        var response = await registerTripUseCase.ExecuteAsync(request);
 
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(ResponseTripsJson), StatusCodes.Status200OK)]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll([FromServices] GetAllTripsUseCase getAllTripsUseCase)
     {
-        var useCase = new GetAllTripsUseCase();
+        var response = await getAllTripsUseCase.ExecuteAsync();
 
-        var result = useCase.Execute();
-
-        return Ok(result);
+        return Ok(response);
     }
 
     [HttpGet]
     [Route("{id}")]
     [ProducesResponseType(typeof(ResponseTripJson), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
-    public IActionResult GetById([FromRoute] Guid id)
+    public async Task<IActionResult> GetById(
+        [FromRoute] Guid id,
+        [FromServices] GetTripByIdUseCase getTripByIdUseCase)
     {
-        var useCase = new GetTripByIdUseCase();
-
-        var response = useCase.Execute(id);
+        var response = await getTripByIdUseCase.ExecuteAsync(id);
 
         return Ok(response);
     }
@@ -55,11 +53,11 @@ public class TripsController : ControllerBase
     [Route("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
-    public IActionResult Delete([FromRoute] Guid id)
+    public async Task<IActionResult> Delete(
+        [FromRoute] Guid id,
+        [FromServices] DeleteTripByIdUseCase deleteTripByIdUseCase)
     {
-        var useCase = new DeleteTripByIdUseCase();
-
-        useCase.Execute(id);
+        await deleteTripByIdUseCase.ExecuteAsync(id);
 
         return NoContent();
     }
@@ -69,13 +67,12 @@ public class TripsController : ControllerBase
     [ProducesResponseType(typeof(ResponseActivityJson), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
-    public IActionResult RegisterActivity(
+    public async Task<IActionResult> RegisterActivity(
         [FromRoute] Guid tripId,
-        [FromBody] RequestRegisterActivityJson request)
+        [FromBody] RequestRegisterActivityJson request,
+        [FromServices] RegisterActivityForTripUseCase registerActivityForTripUseCase)
     {
-        var useCase = new RegisterActivityForTripUseCase();
-
-        var response = useCase.Execute(tripId, request);
+        var response = await registerActivityForTripUseCase.ExecuteAsync(tripId, request);
 
         return Created(string.Empty, response);
     }
@@ -84,13 +81,12 @@ public class TripsController : ControllerBase
     [Route("{tripId}/activities/{activityId}/complete")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
-    public IActionResult CompleteActivity(
+    public async Task<IActionResult> CompleteActivity(
         [FromRoute] Guid tripId,
-        [FromRoute] Guid activityId)
+        [FromRoute] Guid activityId,
+        [FromServices] CompleteActivityForTripUseCase completeActivityForTripUseCase)
     {
-        var useCase = new CompleteActivityForTripUseCase();
-
-        useCase.Execute(tripId, activityId);
+        await completeActivityForTripUseCase.ExecuteAsync(tripId, activityId);
 
         return NoContent();
     }
@@ -99,13 +95,12 @@ public class TripsController : ControllerBase
     [Route("{tripId}/activities/{activityId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ResponseErrorsJson), StatusCodes.Status404NotFound)]
-    public IActionResult DeleteActivity(
+    public async Task<IActionResult> DeleteActivity(
         [FromRoute] Guid tripId,
-        [FromRoute] Guid activityId)
+        [FromRoute] Guid activityId,
+        [FromServices] DeleteActivityForTripUseCase deleteActivityForTripUseCase)
     {
-        var useCase = new DeleteActivityForTripUseCase();
-
-        useCase.Execute(tripId, activityId);
+        await deleteActivityForTripUseCase.ExecuteAsync(tripId, activityId);
 
         return NoContent();
     }
